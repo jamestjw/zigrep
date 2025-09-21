@@ -1,10 +1,13 @@
 const std = @import("std");
 var stdin = std.fs.File.stdin().readerStreaming(&.{});
-// const stdin = std.io.getStdIn().reader();
 
-fn stringContainsDigits(text: []const u8) bool {
+fn isAlphanumeric(char: u8) bool {
+    return (char >= @as(u8, 'a') and char <= @as(u8, 'z')) or (char >= @as(u8, 'A') and char <= @as(u8, 'Z')) or (char >= @as(u8, '0') and char <= @as(u8, '9')) or char == @as(u8, '_');
+}
+
+fn stringAny(text: []const u8, f: anytype) bool {
     for (text) |byte| {
-        if (std.ascii.isDigit(byte)) {
+        if (f(byte)) {
             return true;
         }
     }
@@ -21,7 +24,9 @@ fn matchPattern(input_line: []const u8, pattern: []const u8) bool {
     } else {
         if (pattern[0] == '\\') {
             if (pattern[1] == 'd') {
-                return stringContainsDigits(input_line);
+                return stringAny(input_line, std.ascii.isDigit);
+            } else if (pattern[1] == 'w') {
+                return stringAny(input_line, isAlphanumeric);
             } else {
                 @panic("Unhandled pattern");
             }
@@ -59,4 +64,13 @@ pub fn main() !void {
 test "match digit" {
     try std.testing.expect(matchPattern("apple123", "\\d"));
     try std.testing.expect(!matchPattern("apple", "\\d"));
+}
+
+
+test "match alphanumeric" {
+    try std.testing.expect(!matchPattern("%÷#+=×", "\\w"));
+    try std.testing.expect(matchPattern("a", "\\w"));
+    try std.testing.expect(matchPattern("A", "\\w"));
+    try std.testing.expect(matchPattern("1", "\\w"));
+    try std.testing.expect(matchPattern("_", "\\w"));
 }
