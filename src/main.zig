@@ -1,8 +1,17 @@
 const std = @import("std");
 var stdin = std.fs.File.stdin().readerStreaming(&.{});
 
+const is_alphanum_lut: [256]bool = blk: {
+    var table: [256]bool = undefined;
+    for (0..256) |i| {
+        const char = @as(u8, @intCast(i));
+        table[i] = (char >= @as(u8, 'a') and char <= @as(u8, 'z')) or (char >= @as(u8, 'A') and char <= @as(u8, 'Z')) or (char >= @as(u8, '0') and char <= @as(u8, '9')) or char == @as(u8, '_');
+    }
+    break :blk table;
+};
+
 fn isAlphanumeric(char: u8) bool {
-    return (char >= @as(u8, 'a') and char <= @as(u8, 'z')) or (char >= @as(u8, 'A') and char <= @as(u8, 'Z')) or (char >= @as(u8, '0') and char <= @as(u8, '9')) or char == @as(u8, '_');
+    return is_alphanum_lut[char];
 }
 
 fn stringAny(text: []const u8, f: anytype) bool {
@@ -65,7 +74,6 @@ test "match digit" {
     try std.testing.expect(matchPattern("apple123", "\\d"));
     try std.testing.expect(!matchPattern("apple", "\\d"));
 }
-
 
 test "match alphanumeric" {
     try std.testing.expect(!matchPattern("%÷#+=×", "\\w"));
