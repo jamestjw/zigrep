@@ -1,11 +1,33 @@
 const std = @import("std");
 var stdin = std.fs.File.stdin().readerStreaming(&.{});
+// const stdin = std.io.getStdIn().reader();
+
+fn stringContainsDigits(text: []const u8) bool {
+    for (text) |byte| {
+        if (std.ascii.isDigit(byte)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 fn matchPattern(input_line: []const u8, pattern: []const u8) bool {
-    if (pattern.len == 1) {
+    // TODO: refactor this into two separate stages, parsing
+    // the pattern and matching
+    if (pattern.len == 0) {
+        @panic("empty pattern");
+    } else if (pattern.len == 1) {
         return std.mem.indexOf(u8, input_line, pattern) != null;
     } else {
-        @panic("Unhandled pattern");
+        if (pattern[0] == '\\') {
+            if (pattern[1] == 'd') {
+                return stringContainsDigits(input_line);
+            } else {
+                @panic("Unhandled pattern");
+            }
+        } else {
+            @panic("Unhandled pattern");
+        }
     }
 }
 
@@ -32,4 +54,9 @@ pub fn main() !void {
     } else {
         std.process.exit(1);
     }
+}
+
+test "match digit" {
+    try std.testing.expect(matchPattern("apple123", "\\d"));
+    try std.testing.expect(!matchPattern("apple", "\\d"));
 }
